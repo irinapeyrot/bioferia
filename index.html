@@ -218,7 +218,9 @@ html:not(.depth) .pie-pause{display:none}
 /* ---------- modo profundidad ---------- */
 html.depth .top{position:fixed;left:0;right:0;top:0;padding-top:calc(14px + env(safe-area-inset-top,0px));background:transparent;color:var(--ink)}
 html.depth #scene{display:block}
-html.depth #track{display:block}
+html.depth #track{display:block;position:relative}
+#track .snap{position:absolute;left:0;width:1px;height:1px;scroll-snap-align:start;scroll-snap-stop:always}
+@media (pointer:coarse){html.depth{scroll-snap-type:y mandatory}}
 html.depth .rail{display:flex}
 html.depth .world{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 html.depth .station{position:absolute;left:50%;top:50%;width:min(640px,calc(100vw - 2*var(--gutter) - 26px));padding:0;background:none;
@@ -435,7 +437,7 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
           </ul></div>
       </div>
       <div class="actions"><a class="btn" href="#inicio" data-go="0">Volver al inicio</a></div>
-      <p class="credit">Propuesta de identidad para el Proyecto Final de Tesis de Diseño Gráfico, Instituto Da Vinci.</p>
+      <p class="credit">Propuesta de identidad de Trazo para el Proyecto Final de Tesis de Diseño Gráfico, Escuela Da Vinci.</p>
     </div>
   </section>
 
@@ -486,7 +488,10 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
   const cursor = document.getElementById('cursor');
   const navLinks = [...document.querySelectorAll('.nav a')];
 
-  let W = innerWidth, H = innerHeight, DPR = 1, SEG = 1, mobile = false;
+  let W = innerWidth, H = innerHeight, DPR = 1, SEG = 1, mobile = false, segW = 0;
+  // en pantallas táctiles el recorrido avanza de a una estación por gesto
+  const coarse = matchMedia('(pointer: coarse)').matches;
+  const snaps = [];
   let depth = false;
   let sTarget = 0, sSm = 0, lastT = performance.now(), t0 = performance.now();
   let mx = 0, my = 0, mxs = 0, mys = 0;
@@ -679,8 +684,14 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
     }
     if (!depth) { track.style.height = ''; return; }
     canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
-    SEG = H * 1.15;
+    // en celular la barra del navegador cambia el alto al scrollear: el largo del recorrido
+    // solo se recalcula si cambia el ancho (rotar el teléfono), así no hay saltos
+    if (!coarse || W !== segW || SEG <= 1) { SEG = H * (coarse ? 1 : 1.15); segW = W; }
     track.style.height = ((N - 1) * SEG + H) + 'px';
+    if (coarse) {
+      if (!snaps.length) for (let j = 0; j < N; j++) { const d = document.createElement('div'); d.className = 'snap'; track.appendChild(d); snaps.push(d); }
+      snaps.forEach((d, j) => { d.style.top = (j * SEG) + 'px'; });
+    }
     const avail = H - (mobile ? 150 : 130);
     panels.forEach((p, j) => { fit[j] = Math.min(1, (avail - (j === N - 1 ? 100 : 0)) / Math.max(1, stations[j].offsetHeight)); });
     if (!topoLight) { topoLight = makeTopo('#F0EBE3', 7); topoDark = makeTopo('#070809', 7); }
@@ -688,7 +699,7 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
 
   function go(j, instant){
     if (!depth) { stations[j].scrollIntoView({behavior: (reduce || instant) ? 'auto' : 'smooth'}); return; }
-    window.scrollTo({top: j * SEG + 1, behavior: (reduce || instant) ? 'auto' : 'smooth'});
+    window.scrollTo({top: j * SEG + (coarse ? 0 : 1), behavior: (reduce || instant) ? 'auto' : 'smooth'});
   }
   document.querySelectorAll('[data-go]').forEach(a => a.addEventListener('click', e => {
     e.preventDefault(); go(+a.dataset.go);
@@ -742,7 +753,7 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
     const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
     if (!depth) { requestAnimationFrame(frame); return; }
     sTarget = clamp(scrollY / SEG, 0, N - 1);
-    sSm += (sTarget - sSm) * (1 - Math.exp(-dt * 7));
+    sSm += (sTarget - sSm) * (1 - Math.exp(-dt * (coarse ? 9 : 7)));
     if (Math.abs(sTarget - sSm) < 1e-4) sSm = sTarget;
     mxs += (mx - mxs) * (1 - Math.exp(-dt * 3)); mys += (my - mys) * (1 - Math.exp(-dt * 3));
 
@@ -909,9 +920,9 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
   /* ---------- arranque ---------- */
   layout();
   addEventListener('resize', () => {
-    const keep = sSm;
+    const keep = sSm, prevSEG = SEG;
     layout();
-    if (depth) { window.scrollTo(0, keep * SEG); sSm = keep; }
+    if (depth && SEG !== prevSEG) { window.scrollTo(0, Math.round(keep) * SEG); sSm = keep; }
   });
   document.fonts && document.fonts.ready.then(() => layout());
   const h = location.hash.slice(1);

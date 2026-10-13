@@ -2,7 +2,7 @@
 
 Landing de Bioferia BA 2027 con recorrido en profundidad: al scrollear, la cámara avanza siguiendo un círculo que abre cada sección como un mundo de color.
 
-Proyecto Final de Tesis · Diseño Gráfico · Instituto Da Vinci.
+Propuesta de identidad de Trazo · Proyecto Final de Tesis · Diseño Gráfico · Escuela Da Vinci.
 
 ## Cómo verla
 Abrí `index.html` en el navegador. No necesita instalar nada: es HTML, CSS y JavaScript en un solo archivo, con las fotos y los logos incrustados.
