@@ -270,7 +270,10 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
 }
 @media (max-width:760px){.rail button span{display:none}.rail{right:4px;gap:10px}}
 @media (max-width:420px){.top .btn small{display:none}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){html:not(.motion-on) *{animation:none!important;transition:none!important}}
+.motion-toggle{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:12;border:0;border-radius:999px;padding:11px 18px;
+  font-weight:700;font-size:.86rem;background:var(--lima);color:var(--negro);box-shadow:0 0 0 1.5px var(--negro)}
+html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px currentColor;padding:7px 13px;font-size:.74rem}
 </style>
 </head>
 <body>
@@ -455,7 +458,23 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
 <script>
 (() => {
   const root = document.documentElement;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Si el sistema pide reducir el movimiento la web arranca en versión plana,
+  // pero cada persona puede activar el recorrido con el botón (queda guardado).
+  const reduceSys = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let motionPref = null;
+  try { motionPref = localStorage.getItem('bioferia-motion'); } catch (_) {}
+  const reduce = reduceSys && motionPref !== 'on';
+  if (reduceSys && motionPref === 'on') root.classList.add('motion-on');
+  if (reduceSys) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'motion-toggle';
+    b.textContent = reduce ? 'Ver el recorrido animado' : 'Ver sin movimiento';
+    b.addEventListener('click', () => {
+      try { localStorage.setItem('bioferia-motion', reduce ? 'on' : 'off'); } catch (_) {}
+      location.reload();
+    });
+    document.body.appendChild(b);
+  }
   const stations = [...document.querySelectorAll('.station')];
   const panels = stations.map(s => s.querySelector('.panel'));
   const N = stations.length;
