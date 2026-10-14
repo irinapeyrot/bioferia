@@ -580,6 +580,8 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
     canon:     {explosion:.06, macro:.1,  blur:.04, distort:.15, motion:0,   direction:20, grain:.45, contrast:.55, speed:.4}
   };
   // trama de fondo de cada estación (detrás del mapa topográfico)
+  // las fotos muy claras se atenúan más para que el negro siga siendo negro
+  const TRAMA_BRIGHT = {esporas: .45};
   const WORLD_TRAMA = ['destellos', null, 'palma', 'esporas', null, 'destellos', 'canon', null, 'esporas'];
   const Trama = (() => {
     const VS = 'attribute vec2 aPos; varying vec2 vUv; void main(){ vUv = aPos*0.5+0.5; gl_Position = vec4(aPos,0.0,1.0); }';
@@ -869,7 +871,7 @@ void main(){
       const src = r && (r.canvas || r.fallback);
       if (src) {
         ctx.save();
-        ctx.globalAlpha = light ? .13 : .17;
+        ctx.globalAlpha = (light ? .13 : .17) * (TRAMA_BRIGHT[tid] || 1);
         if (r.canvas) ctx.drawImage(src, 0, 0, W, H);
         else { const sc = Math.max(W / src.naturalWidth, H / src.naturalHeight); ctx.drawImage(src, (W - src.naturalWidth * sc) / 2, (H - src.naturalHeight * sc) / 2, src.naturalWidth * sc, src.naturalHeight * sc); }
         ctx.restore();
