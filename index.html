@@ -466,13 +466,13 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
   // formas de la marca por mundo: tipo, color, ancla desde el centro [x, y en fracción de pantalla, tamaño]
   // d = desktop, m = mobile. Siempre al corte del borde y del lado opuesto al texto.
   const SHAPES = [
-    {t:'trama', id:'destellos', f:'circle', c:'magenta', d:[.44,.14,.44], m:[.5,.52,.36]},
+    {t:'gear',    c:'magenta', d:[.5,.2,.46],    m:[.56,.56,.42]},
     {t:'rays',    c:'indigo',  d:[-.52,.54,.62], m:[-.56,.56,.5], a:[-1.45,-.1], ma:[-1.45,-.1]},
-    {t:'trama', id:'yuca', f:'pillv', c:'lima', d:[.47,.04,.42], m:[.5,.56,.3]},
+    {t:'pills',   c:'lima',    d:[.52,.04,.42],  m:[.56,.56,.36]},
     null, // Escenarios: las formas son las fotos flotantes (HTML)
-    {t:'trama', id:'palma', f:'circle', c:'magenta', d:[.38,.42,.46], m:[.42,.6,.36]},
-    {t:'trama', id:'esporas', f:'soft', c:'indigo', d:[-.45,.06,.4], m:[-.5,.58,.3]},
-    {t:'trama', id:'canon', f:'pillh', c:'magenta', d:[.47,.04,.36], m:[.5,.58,.3]},
+    {t:'bubbles', c:'magenta', d:[.26,.56,.62],  m:[0,.6,.59]},
+    {t:'dashes',  c:'indigo',  d:[-.5,.04,.4],   m:[-.5,.56,.36]},
+    {t:'angular', c:'magenta', d:[.54,0,.42],    m:[.56,.54,.34]},
     {t:'fan',     c:'lima',    d:[-.52,-.36,.4], m:[-.58,.62,.3]},
     {t:'pills',   c:'indigo',  d:[.52,-.42,.38], m:[.58,.24,0]}
   ];
@@ -576,6 +576,8 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
     esporas:   {explosion:.1,  macro:.1,  blur:.06, distort:.2,  motion:.18, direction:30, grain:.38, contrast:.42, speed:.4},
     canon:     {explosion:.06, macro:.1,  blur:.04, distort:.15, motion:0,   direction:20, grain:.45, contrast:.55, speed:.4}
   };
+  // trama de fondo de cada estación (detrás del mapa topográfico)
+  const WORLD_TRAMA = ['destellos', 'yuca', 'palma', 'esporas', 'canon', 'destellos', 'palma', 'yuca', 'esporas'];
   const Trama = (() => {
     const VS = 'attribute vec2 aPos; varying vec2 vUv; void main(){ vUv = aPos*0.5+0.5; gl_Position = vec4(aPos,0.0,1.0); }';
     const COMMON = `precision highp float;
@@ -710,30 +712,6 @@ void main(){
     }
     return {render};
   })();
-  function shapePath(f, R){
-    const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); };
-    if (f === 'circle') { ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); return [2 * R, 2 * R]; }
-    if (f === 'pillv') { rr(-R * .56, -R, R * 1.12, R * 2, R * .56); return [R * 1.12, R * 2]; }
-    if (f === 'pillh') { rr(-R, -R * .56, R * 2, R * 1.12, R * .56); return [R * 2, R * 1.12]; }
-    rr(-R * .8, -R, R * 1.6, R * 2, R * .22); return [R * 1.6, R * 2];
-  }
-  function drawTrama(S, R, k, now){
-    const e = .82 + .18 * k;
-    ctx.save();
-    ctx.rotate(Math.sin(now / 4000 + S.id.length) * .03);
-    // sombra de color de la marca, desplazada
-    ctx.save(); ctx.translate(R * .12, R * .1); ctx.scale(e, e); ctx.fillStyle = C[S.c]; shapePath(S.f, R); ctx.fill(); ctx.restore();
-    ctx.scale(e, e);
-    const [bw, bh] = shapePath(S.f, R);
-    ctx.clip();
-    const q = Math.min(1, 620 / Math.max(bw, bh));
-    const r = Trama.render(S.id, bw * q, bh * q, now, [.5 + mxs * .18, .5 - mys * .18]);
-    if (r && r.canvas) ctx.drawImage(r.canvas, -bw / 2, -bh / 2, bw, bh);
-    else if (r && r.fallback) { const im = r.fallback, s = Math.max(bw / im.naturalWidth, bh / im.naturalHeight); ctx.drawImage(im, -im.naturalWidth * s / 2, -im.naturalHeight * s / 2, im.naturalWidth * s, im.naturalHeight * s); }
-    else { ctx.fillStyle = '#7a7a7a'; ctx.fillRect(-bw / 2, -bh / 2, bw, bh); }
-    ctx.restore();
-  }
-
   /* ---------- formas: arrancan separadas (k=0) y se mezclan (k=1) ---------- */
   function seg(x1, y1, x2, y2){ ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
   function drawShape(S, R, k, t){
@@ -880,6 +858,20 @@ void main(){
     ctx.fillStyle = C[w]; ctx.fillRect(0, 0, W, H);
     const light = (w === 'crema' || w === 'lima');
     const sec = now / 1000;
+    // trama de Trazo Lab de fondo: el color del mundo queda encima como un velo
+    const tid = WORLD_TRAMA[j];
+    if (tid) {
+      const q = coarse ? 3.2 : 2.6;
+      const r = Trama.render(tid, W / q, H / q, now, [.5 + mxs * .08, .5 - mys * .08]);
+      const src = r && (r.canvas || r.fallback);
+      if (src) {
+        ctx.save();
+        ctx.globalAlpha = light ? .13 : .17;
+        if (r.canvas) ctx.drawImage(src, 0, 0, W, H);
+        else { const sc = Math.max(W / src.naturalWidth, H / src.naturalHeight); ctx.drawImage(src, (W - src.naturalWidth * sc) / 2, (H - src.naturalHeight * sc) / 2, src.naturalWidth * sc, src.naturalHeight * sc); }
+        ctx.restore();
+      }
+    }
     // mapa topográfico en movimiento: dos capas que derivan y giran en sentidos opuestos
     const topos = light ? [topoDark, topoDark2] : [topoLight, topoLight2];
     if (topos[0]) {
@@ -907,7 +899,6 @@ void main(){
     const k = arr * (.68 + .32 * Math.sin(sec * .45 + j * 1.3));
     if (R < 2) return;
     ctx.save(); ctx.translate(x, y);
-    if (S.t === 'trama') { drawTrama(S, R, arr, now); ctx.restore(); return; }
     if (S.t !== 'rays' && S.t !== 'bubbles' && ax < 0) ctx.scale(-1, 1);
     ctx.fillStyle = ctx.strokeStyle = C[S.c];
     drawShape(S, R, k, sec);
