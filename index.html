@@ -577,7 +577,7 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
     canon:     {explosion:.06, macro:.1,  blur:.04, distort:.15, motion:0,   direction:20, grain:.45, contrast:.55, speed:.4}
   };
   // trama de fondo de cada estación (detrás del mapa topográfico)
-  const WORLD_TRAMA = ['destellos', 'yuca', 'palma', 'esporas', 'canon', 'destellos', 'palma', 'yuca', 'esporas'];
+  const WORLD_TRAMA = ['destellos', null, 'palma', 'esporas', null, 'destellos', 'canon', null, 'esporas'];
   const Trama = (() => {
     const VS = 'attribute vec2 aPos; varying vec2 vUv; void main(){ vUv = aPos*0.5+0.5; gl_Position = vec4(aPos,0.0,1.0); }';
     const COMMON = `precision highp float;
