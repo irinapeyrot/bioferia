@@ -466,13 +466,13 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
   // formas de la marca por mundo: tipo, color, ancla desde el centro [x, y en fracción de pantalla, tamaño]
   // d = desktop, m = mobile. Siempre al corte del borde y del lado opuesto al texto.
   const SHAPES = [
-    {t:'gear',    c:'magenta', d:[.5,.2,.46],    m:[.56,.56,.42]},
+    {t:'trama', id:'destellos', f:'circle', c:'magenta', d:[.44,.14,.44], m:[.5,.52,.36]},
     {t:'rays',    c:'indigo',  d:[-.52,.54,.62], m:[-.56,.56,.5], a:[-1.45,-.1], ma:[-1.45,-.1]},
-    {t:'pills',   c:'lima',    d:[.52,.04,.42],  m:[.56,.56,.36]},
+    {t:'trama', id:'yuca', f:'pillv', c:'lima', d:[.47,.04,.42], m:[.5,.56,.3]},
     null, // Escenarios: las formas son las fotos flotantes (HTML)
-    {t:'bubbles', c:'magenta', d:[.26,.56,.62],  m:[0,.6,.59]},
-    {t:'dashes',  c:'indigo',  d:[-.5,.04,.4],   m:[-.5,.56,.36]},
-    {t:'angular', c:'magenta', d:[.54,0,.42],    m:[.56,.54,.34]},
+    {t:'trama', id:'palma', f:'circle', c:'magenta', d:[.38,.42,.46], m:[.42,.6,.36]},
+    {t:'trama', id:'esporas', f:'soft', c:'indigo', d:[-.45,.06,.4], m:[-.5,.58,.3]},
+    {t:'trama', id:'canon', f:'pillh', c:'magenta', d:[.47,.04,.36], m:[.5,.58,.3]},
     {t:'fan',     c:'lima',    d:[-.52,-.36,.4], m:[-.58,.62,.3]},
     {t:'pills',   c:'indigo',  d:[.52,-.42,.38], m:[.58,.24,0]}
   ];
@@ -563,6 +563,176 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
     return cv;
   }
   let topoLight = null, topoDark = null, topoLight2 = null, topoDark2 = null;
+
+
+  /* ---------- tramas de Trazo Lab ----------
+     Port del motor de Trazo Lab (engine/trama-layer.js): foto en blanco y negro con
+     macro, distorsión, explosión, movimiento, desenfoque, grano y contraste, en WebGL.
+     Valores tomados de los valores por defecto y las recetas de Trazo Lab. */
+  const TRAMA_SETS = {
+    destellos: {explosion:.3,  macro:.06, blur:.04, distort:.25, motion:0,   direction:20, grain:.32, contrast:.4,  speed:.4},
+    yuca:      {explosion:.1,  macro:.16, blur:.08, distort:.12, motion:0,   direction:20, grain:.38, contrast:.6,  speed:.4},
+    palma:     {explosion:.12, macro:.08, blur:.04, distort:.35, motion:0,   direction:20, grain:.32, contrast:.45, speed:.4},
+    esporas:   {explosion:.1,  macro:.1,  blur:.06, distort:.2,  motion:.18, direction:30, grain:.38, contrast:.42, speed:.4},
+    canon:     {explosion:.06, macro:.1,  blur:.04, distort:.15, motion:0,   direction:20, grain:.45, contrast:.55, speed:.4}
+  };
+  const Trama = (() => {
+    const VS = 'attribute vec2 aPos; varying vec2 vUv; void main(){ vUv = aPos*0.5+0.5; gl_Position = vec4(aPos,0.0,1.0); }';
+    const COMMON = `precision highp float;
+varying vec2 vUv;
+float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*.1031); p3 += dot(p3, p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+vec2 hash22(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*vec3(.1031,.1030,.0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xx+p3.yz)*p3.zy); }
+float gnoise(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); vec2 u = f*f*(3.0-2.0*f);
+  float a = dot(hash22(i)*2.0-1.0, f); float b = dot(hash22(i+vec2(1.0,0.0))*2.0-1.0, f-vec2(1.0,0.0));
+  float c = dot(hash22(i+vec2(0.0,1.0))*2.0-1.0, f-vec2(0.0,1.0)); float d = dot(hash22(i+vec2(1.0,1.0))*2.0-1.0, f-vec2(1.0,1.0));
+  return mix(mix(a,b,u.x), mix(c,d,u.x), u.y); }
+const mat2 ROT = mat2(1.6, 1.2, -1.2, 1.6);
+float fbm3(vec2 p){ float s=0.0, a=0.5; for(int i=0;i<3;i++){ s+=a*gnoise(p); p=ROT*p; a*=0.5; } return s; }
+`;
+    const FS_SRC = COMMON + `
+uniform vec2 uRes; uniform float uTime; uniform vec2 uSeed; uniform float uMacro, uDistort, uPhotoAspect;
+uniform vec2 uCenter; uniform sampler2D uPhoto;
+float photoLum(vec2 p, float A){
+  float P = uPhotoAspect; float s = max(A/P, 1.0);
+  vec2 puv = vec2(p.x/(P*s) + 0.5, 0.5 - p.y/s);
+  puv = 1.0 - abs(1.0 - mod(puv, 2.0));
+  return dot(texture2D(uPhoto, puv).rgb, vec3(0.299, 0.587, 0.114));
+}
+void main(){
+  float A = uRes.x/uRes.y;
+  vec2 c = (uCenter-0.5)*vec2(A,1.0);
+  vec2 p = (vUv-0.5)*vec2(A,1.0);
+  float zoom = 1.0 + 7.0*uMacro*uMacro;
+  p = c + (p-c)/zoom;
+  if(uDistort > 0.001){
+    vec2 w = vec2(fbm3(p*1.8 + uSeed*0.37 + vec2(0.0, uTime*0.06)), fbm3(p*1.8 + uSeed*0.37 + vec2(4.1,7.3) - vec2(uTime*0.05, 0.0)));
+    p += w*uDistort*0.55;
+    vec2 d = p-c; float r = length(d);
+    float ang = uDistort*uDistort*3.2*exp(-r*2.2);
+    float cs = cos(ang), sn = sin(ang);
+    p = c + mat2(cs,-sn,sn,cs)*d;
+  }
+  gl_FragColor = vec4(vec3(photoLum(p, A)), 1.0);
+}`;
+    const FS_OUT = COMMON + `
+uniform sampler2D uSrc; uniform vec2 uRes; uniform float uFrame; uniform vec2 uCenter;
+uniform float uExplode, uMotion, uAngle, uBlur, uGrain, uContrast, uTaps;
+#define MAXT 48
+vec2 mirror(vec2 u){ return 1.0 - abs(1.0 - mod(u, 2.0)); }
+void main(){
+  float A = uRes.x/uRes.y;
+  vec2 uv = vUv;
+  vec2 dir = vec2(cos(uAngle), sin(uAngle));
+  float blurR = uBlur*uBlur*0.07; float motL = uMotion*uMotion*0.35; float expL = uExplode*0.55;
+  float jit = hash12(gl_FragCoord.xy + fract(uFrame*0.618)*97.0);
+  float acc = 0.0;
+  for(int i=0;i<MAXT;i++){
+    float fi = float(i); if(fi >= uTaps) break;
+    float t = (fi + jit)/uTaps; float r = sqrt((fi+0.5)/uTaps); float th = fi*2.39996 + jit*6.2832;
+    vec2 off = vec2(cos(th), sin(th))*r*blurR + dir*(t-0.5)*motL; off.x /= A;
+    vec2 su = uCenter + (uv - uCenter)*(1.0 - expL*t);
+    acc += texture2D(uSrc, mirror(su + off)).r;
+  }
+  float v = acc/uTaps;
+  float gs = mix(1.0, 2.6, uGrain);
+  vec2 gp = floor(gl_FragCoord.xy/gs);
+  float fr = floor(uFrame);
+  float g = hash12(gp + vec2(fr*13.1, fr*7.7)) + hash12(gp*1.37 + 19.1 + vec2(fr*3.3, fr*11.9)) - 1.0;
+  v += g*uGrain*uGrain*0.3 + g*uGrain*0.06;
+  float k = 1.0 + uContrast*uContrast*5.5;
+  v = clamp((v-0.5)*k + 0.5, 0.0, 1.0);
+  gl_FragColor = vec4(vec3(v), 1.0);
+}`;
+    let g = null;
+    const photos = {}, state = {};
+    function compile(gl, type, src){ const sh = gl.createShader(type); gl.shaderSource(sh, src); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; }
+    function prog(gl, fs){ const p = gl.createProgram(); gl.attachShader(p, compile(gl, gl.VERTEX_SHADER, VS)); gl.attachShader(p, compile(gl, gl.FRAGMENT_SHADER, fs)); gl.bindAttribLocation(p, 0, 'aPos'); gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)); const L = {}; return {p, loc: n => (n in L ? L[n] : (L[n] = gl.getUniformLocation(p, n)))}; }
+    function texParams(gl){ gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); }
+    function init(){
+      if (g) return g.ok ? g : null;
+      g = {ok: false};
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl', {antialias: false, alpha: false, premultipliedAlpha: false, depth: false, stencil: false});
+        if (!gl) return null;
+        const vbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+        g = {ok: true, canvas, gl, src: prog(gl, FS_SRC), out: prog(gl, FS_OUT)};
+        canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); g = null; for (const k in photos) delete photos[k]; for (const k in state) delete state[k]; });
+      } catch (err) { console.warn('[trama]', err); g = {ok: false}; return null; }
+      return g;
+    }
+    function photo(id){
+      if (photos[id] !== undefined) return photos[id];
+      photos[id] = null;
+      const img = new Image();
+      img.onload = () => {
+        const p = {img, aspect: img.naturalWidth / img.naturalHeight, tex: null};
+        if (g && g.ok) { const gl = g.gl; p.tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, p.tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img); texParams(gl); }
+        photos[id] = p;
+      };
+      img.src = 'assets/tramas/' + id + '.jpg';
+      return null;
+    }
+    function uniforms(gl, pr, u){ gl.useProgram(pr.p); for (const n in u) { const l = pr.loc(n); if (!l) continue; const v = u[n]; if (typeof v === 'number') gl.uniform1f(l, v); else if (v.unit !== undefined) gl.uniform1i(l, v.unit); else gl.uniform2f(l, v[0], v[1]); } }
+    // Devuelve un lienzo con la trama del cuadro actual (o la foto quieta si no hay WebGL)
+    function render(id, w, h, now, center){
+      const G = init(); const p = photo(id);
+      if (!p) return null;
+      if (!G || !p.tex) return {fallback: p.img};
+      const {gl, canvas} = G, P = TRAMA_SETS[id];
+      w = Math.max(2, Math.round(w)); h = Math.max(2, Math.round(h));
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+      let st = state[id];
+      if (!st || st.w !== w || st.h !== h) {
+        if (st) { gl.deleteFramebuffer(st.fb); gl.deleteTexture(st.tex); }
+        const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null); texParams(gl);
+        const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        st = state[id] = {w, h, tex, fb, sim: st ? st.sim : 0, last: now, seed: [10 + id.length * 1.7, 3 + id.charCodeAt(0) * 0.017]};
+      }
+      const dt = Math.min(.1, Math.max(0, (now - st.last) / 1000)); st.last = now;
+      st.sim += dt * P.speed * 2;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, st.fb); gl.viewport(0, 0, w, h);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, p.tex);
+      uniforms(gl, G.src, {uRes: [w, h], uTime: st.sim, uSeed: st.seed, uMacro: P.macro, uDistort: P.distort, uPhotoAspect: p.aspect, uCenter: center, uPhoto: {unit: 1}});
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, w, h);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, st.tex);
+      const kernel = P.blur > .005 || P.motion > .005 || P.explosion > .005;
+      uniforms(gl, G.out, {uSrc: {unit: 0}, uRes: [w, h], uFrame: Math.floor(now / 1000 * 24), uCenter: center,
+        uExplode: P.explosion, uMotion: P.motion, uAngle: P.direction * Math.PI / 180, uBlur: P.blur, uGrain: P.grain, uContrast: P.contrast, uTaps: kernel ? (coarse ? 24 : 40) : 1});
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.flush();
+      return {canvas};
+    }
+    return {render};
+  })();
+  function shapePath(f, R){
+    const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); };
+    if (f === 'circle') { ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); return [2 * R, 2 * R]; }
+    if (f === 'pillv') { rr(-R * .56, -R, R * 1.12, R * 2, R * .56); return [R * 1.12, R * 2]; }
+    if (f === 'pillh') { rr(-R, -R * .56, R * 2, R * 1.12, R * .56); return [R * 2, R * 1.12]; }
+    rr(-R * .8, -R, R * 1.6, R * 2, R * .22); return [R * 1.6, R * 2];
+  }
+  function drawTrama(S, R, k, now){
+    const e = .82 + .18 * k;
+    ctx.save();
+    ctx.rotate(Math.sin(now / 4000 + S.id.length) * .03);
+    // sombra de color de la marca, desplazada
+    ctx.save(); ctx.translate(R * .12, R * .1); ctx.scale(e, e); ctx.fillStyle = C[S.c]; shapePath(S.f, R); ctx.fill(); ctx.restore();
+    ctx.scale(e, e);
+    const [bw, bh] = shapePath(S.f, R);
+    ctx.clip();
+    const q = Math.min(1, 620 / Math.max(bw, bh));
+    const r = Trama.render(S.id, bw * q, bh * q, now, [.5 + mxs * .18, .5 - mys * .18]);
+    if (r && r.canvas) ctx.drawImage(r.canvas, -bw / 2, -bh / 2, bw, bh);
+    else if (r && r.fallback) { const im = r.fallback, s = Math.max(bw / im.naturalWidth, bh / im.naturalHeight); ctx.drawImage(im, -im.naturalWidth * s / 2, -im.naturalHeight * s / 2, im.naturalWidth * s, im.naturalHeight * s); }
+    else { ctx.fillStyle = '#7a7a7a'; ctx.fillRect(-bw / 2, -bh / 2, bw, bh); }
+    ctx.restore();
+  }
 
   /* ---------- formas: arrancan separadas (k=0) y se mezclan (k=1) ---------- */
   function seg(x1, y1, x2, y2){ ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
@@ -737,6 +907,7 @@ html.depth #inicio .panel > *:nth-child(6){animation-delay:.4s}
     const k = arr * (.68 + .32 * Math.sin(sec * .45 + j * 1.3));
     if (R < 2) return;
     ctx.save(); ctx.translate(x, y);
+    if (S.t === 'trama') { drawTrama(S, R, arr, now); ctx.restore(); return; }
     if (S.t !== 'rays' && S.t !== 'bubbles' && ax < 0) ctx.scale(-1, 1);
     ctx.fillStyle = ctx.strokeStyle = C[S.c];
     drawShape(S, R, k, sec);

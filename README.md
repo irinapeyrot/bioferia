@@ -17,3 +17,6 @@ Para que se vea **Articulat CF**, el proyecto web de Adobe Fonts (`pew4vhe`) tie
 ## Estructura
 - `index.html` — toda la landing.
 - `assets/logos/` — logos vectorizados en un color (OSDE, Gestiones Solidarias, Buenos Aires Ciudad).
+- `assets/tramas/` — fotos de las tramas de Trazo Lab (Destellos, Yuca, Palma, Esporas, Cañón). La animación usa el mismo motor WebGL de Trazo Lab, portado dentro de `index.html`.
+
+Para probarla en local hace falta un servidor (por ejemplo `python3 -m http.server`), porque WebGL no puede leer fotos abiertas como archivo.
