@@ -124,27 +124,23 @@ p{margin:0;max-width:58ch}
 .area:hover{border-bottom-color:var(--st-line)}
 .area:hover::before{transform:scale(1.6)}
 
-/* ---------- ficha de área (dialog) ---------- */
-.ficha{--st-bg:var(--indigo);--st-ink:var(--crema);--st-acc:var(--lima);--st-mute:rgba(240,235,227,.88);--st-line:rgba(240,235,227,.48);
-  border:0;padding:0;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);border-radius:28px;background:var(--st-bg);color:var(--st-ink);
-  box-shadow:0 0 0 1.5px rgba(240,235,227,.2);cursor:auto;overflow:auto}
-html.cursor-on .ficha,html.cursor-on .ficha *{cursor:auto}html.cursor-on .ficha button,.ficha button{cursor:pointer}
-html.ficha-open #cursor{opacity:0!important}
-.ficha::backdrop{background:rgba(7,8,9,.72)}
-.ficha[open]{animation:fichaIn .35s cubic-bezier(.2,.7,.2,1)}
-@keyframes fichaIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
-.ficha-in{padding:26px 28px 28px;display:flex;flex-direction:column;gap:14px}
-.ficha-top{display:flex;justify-content:space-between;align-items:center;gap:16px}
-.ficha-n{margin:0;font-size:.74rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--st-mute);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:10px}
-.ficha-n::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--st-acc)}
-.ficha-x{background:none;border:0;padding:4px 0;font-weight:700;font-size:.86rem;text-decoration:underline dotted;text-underline-offset:4px}
-.ficha h3{margin:0;font-size:clamp(2rem,6vw,2.8rem);font-weight:800;letter-spacing:-.035em;line-height:1}
-.ficha-d{margin:0;font-size:1.04rem;color:var(--st-mute)}
-.ficha-h{margin:6px 0 0;font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--st-mute);border-top:2px dotted var(--st-line);padding-top:12px}
-.ficha-tags{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
-.ficha-tags li{border-radius:999px;padding:7px 14px;background:var(--st-ink);color:var(--st-bg);font-weight:700;font-size:.86rem}
-.ficha-nav{display:flex;justify-content:space-between;gap:10px;margin-top:8px}
-html.ficha-open{overflow:hidden}
+/* ---------- mini expansión de área ---------- */
+.areas{position:relative}.areas li{position:relative}
+.area[aria-expanded="true"]::before{transform:scale(1.6)}
+.area::after{transition:transform .25s ease}
+.area[aria-expanded="true"]::after{transform:rotate(45deg);opacity:1}
+.area-pop{position:absolute;left:0;top:calc(100% + 4px);z-index:6;width:min(290px,78vw);padding:14px 16px 16px;border-radius:22px;
+  background:var(--st-ink);color:var(--st-bg);display:flex;flex-direction:column;gap:8px;text-align:left;
+  box-shadow:0 14px 40px rgba(7,8,9,.28);animation:popIn .28s cubic-bezier(.2,.7,.2,1)}
+.area-pop.r{left:auto;right:0}
+.area-pop.up{top:auto;bottom:calc(100% + 4px)}
+.area-pop strong{font-size:1.02rem;font-weight:800;letter-spacing:-.01em}
+.area-pop p{margin:0;font-size:.9rem;line-height:1.4}
+.area-pop ul{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:2px 0 0;padding:0}
+.area-pop li{border-radius:999px;padding:4px 10px;box-shadow:inset 0 0 0 1.5px currentColor;font-size:.74rem;font-weight:700;opacity:.9}
+@keyframes popIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+.area-pop.up{animation-name:popUp}
+@keyframes popUp{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
 .zones{font-size:.9rem;color:var(--st-mute);border-top:2px dotted var(--st-line);padding-top:12px}
 .zones b{color:var(--st-ink);font-weight:700}
 
@@ -215,6 +211,11 @@ input::placeholder,textarea::placeholder{color:var(--st-mute);opacity:1}
 .floaters .floater:nth-child(n+5){display:none}
 @media (min-width:761px){html.depth .floaters .floater:nth-child(n+5){display:block}}
 @media (max-width:760px){.floater figcaption{left:50%;transform:translateX(-50%);white-space:normal;text-align:center;width:max-content;max-width:115%;font-size:.58rem;line-height:1.15;padding:3px 7px}}
+@media (min-width:761px){
+  /* en estaciones laterales el panel se corre hacia un costado: las fotos se compensan para quedar fijas en pantalla */
+  html.depth #gastronomia .floaters{transform:translate(calc(-50% + min(20vw,300px)),-50%)}
+  html.depth #descubrinos .floaters{transform:translate(calc(-50% - min(20vw,300px)),-50%)}
+}
 @keyframes flo{0%,100%{transform:translate(0,0) rotate(-1.4deg)}50%{transform:translate(0,-12px) rotate(1.4deg)}}
 @media (min-width:761px){
   html.depth .floaters{display:block;position:absolute;left:50%;top:50%;width:100vw;height:100vh;transform:translate(-50%,-50%);margin:0;pointer-events:none}
@@ -342,13 +343,18 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
 
   <section class="station w-lima" id="descubrinos" data-label="Quiénes somos" data-side="-1">
     <div class="panel">
-            <h2>Quiénes somos</h2>
+            <div class="floaters" aria-label="Fotos del festival">
+          <figure class="floater softw" style="--c:var(--indigo);--d:8s;--dl:-1.5s;--op:50% 55%;--l:3%;--t:11%;--w:25%" data-foto="https://framerusercontent.com/images/oej9r0ePRIZQX8Cgs0BPRumDsw.jpg?scale-down-to=1024"><div class="ph"></div><figcaption>Hipódromo de Palermo</figcaption></figure>
+          <figure class="floater circle lr" style="--c:var(--magenta);--d:9.4s;--dl:-3.2s;--op:50% 50%;--l:24%;--t:42%;--w:13%" data-foto="https://framerusercontent.com/images/yvvF45mHsKkbYez5HqwcuZfTDZg.jpg?scale-down-to=1024"><div class="ph"></div><figcaption>Bioferia 2026</figcaption></figure>
+      </div>
+      <h2>Quiénes somos</h2>
       <p class="lead">Bioferia es el festival de sustentabilidad y consumo responsable más grande de América Latina. Lo produce GrupoBio, con más de 15 años de trayectoria en sustentabilidad en la región.</p>
       <p class="body">Durante tres días reúne a emprendedores de triple impacto, empresas con iniciativas ambientales, ONG y público general en charlas, talleres, experiencias inmersivas y música en vivo.</p>
       <ul class="orgs" aria-label="Organizan">
         <li>Bioferia</li>
         <li>Greenbondi <small>agencia de sustentabilidad</small></li>
         <li>Bioguía</li>
+        <li>Hipódromo de Palermo <small>host</small></li>
       </ul>
     </div>
   </section>
@@ -356,21 +362,20 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
   <section class="station w-indigo" id="areas" data-label="Áreas" data-side="1">
     <div class="panel">
       <p class="eyebrow">Más de 200 marcas con impacto positivo</p>
-      <h2>Descubrí las <em>12 áreas</em> temáticas.</h2>
-      <p class="lead">Cada área reúne marcas, talleres y charlas alrededor de un mismo tema. Elegí una para ver qué vas a encontrar.</p>
+      <h2>Descubrí las <em>11 áreas</em> temáticas.</h2>
+      <p class="lead">Cada área reúne marcas, talleres y charlas alrededor de un mismo tema. Tocá una para ver qué vas a encontrar.</p>
       <ul class="areas">
-        <li><button type="button" class="area" data-area="0" aria-haspopup="dialog">Mercado</button></li>
-        <li><button type="button" class="area" data-area="1" aria-haspopup="dialog">Gastronomía</button></li>
-        <li><button type="button" class="area" data-area="2" aria-haspopup="dialog">Bienestar</button></li>
-        <li><button type="button" class="area" data-area="3" aria-haspopup="dialog">Moda</button></li>
-        <li><button type="button" class="area" data-area="4" aria-haspopup="dialog">Diseño</button></li>
-        <li><button type="button" class="area" data-area="5" aria-haspopup="dialog">Infancia</button></li>
-        <li><button type="button" class="area" data-area="6" aria-haspopup="dialog">Ecoturismo</button></li>
-        <li><button type="button" class="area" data-area="7" aria-haspopup="dialog">Aire libre</button></li>
-        <li><button type="button" class="area" data-area="8" aria-haspopup="dialog">Casa y jardín</button></li>
-        <li><button type="button" class="area" data-area="9" aria-haspopup="dialog">Energía</button></li>
-        <li><button type="button" class="area" data-area="10" aria-haspopup="dialog">Movilidad</button></li>
-        <li><button type="button" class="area" data-area="11" aria-haspopup="dialog">Triple impacto</button></li>
+        <li><button type="button" class="area" data-area="0" aria-expanded="false">Mercado</button></li>
+        <li><button type="button" class="area" data-area="1" aria-expanded="false">Gastronomía</button></li>
+        <li><button type="button" class="area" data-area="2" aria-expanded="false">Bienestar</button></li>
+        <li><button type="button" class="area" data-area="3" aria-expanded="false">Moda</button></li>
+        <li><button type="button" class="area" data-area="4" aria-expanded="false">Diseño y deco</button></li>
+        <li><button type="button" class="area" data-area="5" aria-expanded="false">Infancia</button></li>
+        <li><button type="button" class="area" data-area="6" aria-expanded="false">Turismo</button></li>
+        <li><button type="button" class="area" data-area="7" aria-expanded="false">Arquitectura y jardinería</button></li>
+        <li><button type="button" class="area" data-area="8" aria-expanded="false">Energías renovables</button></li>
+        <li><button type="button" class="area" data-area="9" aria-expanded="false">Movilidad</button></li>
+        <li><button type="button" class="area" data-area="10" aria-expanded="false">ONG</button></li>
       </ul>
       <p class="zones"><b>El predio se organiza en cuatro zonas:</b> sponsors y pymes, emprendedores y microemprendedores, gastronomía y escenarios.</p>
     </div>
@@ -404,7 +409,13 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
 
   <section class="station w-lima" id="gastronomia" data-label="Gastronomía" data-side="1">
     <div class="panel">
-            <h2>Propuesta gastronómica <em>consciente.</em></h2>
+            <div class="floaters" aria-label="Fotos de la propuesta gastronómica">
+          <figure class="floater softw" style="--c:var(--magenta);--d:7.2s;--dl:-1s;--op:50% 50%;--l:58%;--t:9%;--w:18%" data-foto="https://framerusercontent.com/images/icNOKb3nd3g01L0ToIrlDA5suk.jpg?scale-down-to=1024"><div class="ph"></div><figcaption>Patio gastronómico</figcaption></figure>
+          <figure class="floater pillh lr" style="--c:var(--indigo);--d:8.4s;--dl:-2.6s;--op:50% 45%;--l:75%;--t:31%;--w:17%" data-foto="https://framerusercontent.com/images/eekv3IeADPBuVM8lTnt2K8OwtE.jpg?scale-down-to=1024"><div class="ph"></div><figcaption>Food trucks</figcaption></figure>
+          <figure class="floater pillv" style="--c:var(--magenta);--d:9.1s;--dl:-4s;--op:50% 35%;--l:61%;--t:50%;--w:10%" data-foto="https://framerusercontent.com/images/LS4HgwoJ8YSGeDqdpk0Lofpqs.jpg?scale-down-to=1024"><div class="ph"></div><figcaption>Helado artesanal</figcaption></figure>
+          <figure class="floater soft lr" style="--c:var(--indigo);--d:10.3s;--dl:-5.5s;--op:50% 40%;--l:79%;--t:63%;--w:12%" data-foto="https://framerusercontent.com/images/KmMEuTnSgHx6pk92Q9RVQjqlLA.jpg?scale-down-to=1024"><div class="ph"></div><figcaption>Sin lactosa</figcaption></figure>
+      </div>
+      <h2>Propuesta gastronómica <em>consciente.</em></h2>
       <p class="lead">Un área con chefs, productores, food trucks y propuestas de autor que apuestan a que lo que se come importa.</p>
       <ul class="tags" aria-label="Opciones">
         <li>Vegetariano</li><li>Vegano</li><li>Sin TACC</li>
@@ -457,7 +468,7 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
         <div class="field full"><label for="f-perfil">Perfil</label>
           <select id="f-perfil" name="perfil" required aria-describedby="e-perfil">
             <option value="">Elegí una opción</option>
-            <option>Sponsor</option><option>Expositor</option><option>Prensa</option><option>Escuelas</option><option>ONG</option>
+            <option>Sponsor</option><option>Expositor</option><option>Prensa</option><option>Escuelas</option><option>ONGs</option>
           </select><p class="err" id="e-perfil"></p></div>
         <div class="field full"><label for="f-msg">Mensaje breve</label><textarea id="f-msg" name="mensaje" rows="2" placeholder="Contanos en qué estás pensando"></textarea></div>
         <div class="form-foot">
@@ -494,20 +505,7 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
 </footer>
 <div id="track" aria-hidden="true"></div>
 
-<!-- Ficha de cada área temática: se abre dentro de la landing -->
-<dialog class="ficha" id="ficha" aria-labelledby="ficha-t">
-  <div class="ficha-in">
-    <div class="ficha-top"><p class="ficha-n" id="ficha-n"></p><button type="button" class="ficha-x" data-close aria-label="Cerrar">Cerrar</button></div>
-    <h3 id="ficha-t"></h3>
-    <p class="ficha-d" id="ficha-d"></p>
-    <p class="ficha-h">Qué vas a encontrar</p>
-    <ul class="ficha-tags" id="ficha-tags"></ul>
-    <div class="ficha-nav">
-      <button type="button" class="btn ghost" data-step="-1">Anterior</button>
-      <button type="button" class="btn" data-step="1">Siguiente</button>
-    </div>
-  </div>
-</dialog>
+
 
 <script>
 (() => {
@@ -546,7 +544,7 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
     {t:'rays',    c:'indigo',  d:[-.52,.54,.62], m:[-.56,.56,.5], a:[-1.45,-.1], ma:[-1.45,-.1]},
     {t:'pills',   c:'lima',    d:[.52,.04,.42],  m:[.56,.56,.36]},
     null, // Escenarios: las formas son las fotos flotantes (HTML)
-    {t:'bubbles', c:'magenta', d:[.26,.56,.62],  m:[0,.6,.59]},
+    null, // Gastronomía: las formas son las fotos flotantes (HTML)
     {t:'dashes',  c:'indigo',  d:[-.5,.04,.4],   m:[-.5,.56,.36]},
     {t:'angular', c:'magenta', d:[.54,0,.42],    m:[.56,.54,.34]},
     {t:'fan',     c:'lima',    d:[-.52,-.36,.4], m:[-.58,.62,.3]},
@@ -1130,41 +1128,47 @@ void main(){
     pie.classList.toggle('paused', on);
   });
 
-  /* ---------- fichas de las 12 áreas ---------- */
+  /* ---------- áreas: mini expansión dentro de la lista ---------- */
   const AREAS = [
-    ['Mercado', 'El corazón comercial del festival: emprendedores que producen con criterio sustentable y venden directo, sin intermediarios.', ['Alimentos orgánicos', 'Cosmética natural', 'Productos a granel', 'Reutilizables']],
-    ['Gastronomía', 'Chefs, productores y food trucks con cocina de estación, ingredientes locales y cero descartables.', ['Vegetariano', 'Vegano', 'Sin TACC', 'Productores locales']],
-    ['Bienestar', 'Prácticas para bajar un cambio y cuidar el cuerpo y la cabeza, al aire libre y entre todos.', ['Yoga', 'Meditación', 'Terapias naturales', 'Respiración']],
-    ['Moda', 'Marcas que repiensan cómo se hace y cuánto dura la ropa: textiles reciclados, diseño de autor y circularidad.', ['Moda circular', 'Segunda mano', 'Textiles reciclados', 'Diseño de autor']],
-    ['Diseño', 'Objetos, mobiliario e ilustración hechos con materiales recuperados y procesos de bajo impacto.', ['Materiales recuperados', 'Mobiliario', 'Objetos', 'Ilustración']],
-    ['Infancia', 'Juegos, talleres y propuestas para que chicas y chicos descubran la naturaleza jugando.', ['Talleres', 'Juegos', 'Cuentos', 'Huerta para chicos']],
-    ['Ecoturismo', 'Destinos y experiencias para viajar de otra manera, conociendo comunidades y paisajes sin dañarlos.', ['Turismo rural', 'Reservas naturales', 'Viajes responsables', 'Comunidades']],
-    ['Aire libre', 'Equipamiento y propuestas para disfrutar la naturaleza sin dejar huella.', ['Trekking', 'Camping', 'Deportes', 'No dejar rastro']],
-    ['Casa y jardín', 'Ideas para un hogar más sustentable, de la huerta en el balcón al compost de la cocina.', ['Huerta', 'Compostaje', 'Plantas nativas', 'Limpieza ecológica']],
-    ['Energía', 'Soluciones para generar y usar energía de forma limpia, en casa, en la empresa y en el barrio.', ['Paneles solares', 'Eficiencia', 'Energía comunitaria', 'Innovación']],
-    ['Movilidad', 'Formas de moverse por la ciudad con menos emisiones y más disfrute.', ['Bicis', 'Eléctricos', 'Transporte compartido', 'Ciudad caminable']],
-    ['Triple impacto', 'Empresas y emprendimientos que miden su impacto social, ambiental y económico, y lo cuentan.', ['Empresas B', 'Economía circular', 'Tercer sector', 'Inversión de impacto']]
+    ['Emprendedores que producen con criterio sustentable y venden directo, sin intermediarios.', ['Alimentos orgánicos', 'Cosmética natural', 'A granel']],
+    ['Chefs, productores, food trucks y propuestas de autor: cocina consciente y sin descartables.', ['Vegetariano', 'Vegano', 'Sin TACC']],
+    ['Prácticas para bajar un cambio y cuidar el cuerpo y la cabeza, al aire libre.', ['Yoga', 'Meditación', 'Terapias naturales']],
+    ['Marcas que repiensan cómo se hace la ropa y cuánto dura.', ['Moda circular', 'Segunda mano', 'Diseño de autor']],
+    ['Objetos, mobiliario y deco hechos con materiales recuperados y procesos de bajo impacto.', ['Objetos', 'Mobiliario', 'Materiales recuperados']],
+    ['Juegos y talleres para que chicas y chicos descubran la naturaleza jugando.', ['Talleres', 'Juegos', 'Huerta para chicos']],
+    ['Destinos y experiencias para viajar distinto, cuidando los paisajes y las comunidades.', ['Viajes responsables', 'Naturaleza', 'Turismo rural']],
+    ['Construcción natural, huerta y jardín para habitar de otra manera.', ['Bioconstrucción', 'Huerta', 'Plantas nativas']],
+    ['Soluciones para generar y usar energía limpia en casa, en la empresa y en el barrio.', ['Paneles solares', 'Eficiencia', 'Energía comunitaria']],
+    ['Formas de moverse por la ciudad con menos emisiones.', ['Bicis', 'Eléctricos', 'Transporte compartido']],
+    ['Organizaciones del tercer sector que trabajan por el ambiente y la comunidad. Bioferia les da becas para participar.', ['Tercer sector', 'Voluntariado', 'Becas para ONG']]
   ];
-  const ficha = document.getElementById('ficha');
-  let fichaI = 0, fichaFrom = null;
-  function fillFicha(i){
-    fichaI = (i + AREAS.length) % AREAS.length;
-    const [t, d, tags] = AREAS[fichaI];
-    document.getElementById('ficha-n').textContent = 'Área ' + String(fichaI + 1).padStart(2, '0') + ' / ' + AREAS.length;
-    document.getElementById('ficha-t').textContent = t;
-    document.getElementById('ficha-d').textContent = d;
-    document.getElementById('ficha-tags').innerHTML = tags.map(x => '<li>' + x + '</li>').join('');
+  const areasList = document.querySelector('.areas');
+  const pop = document.createElement('div');
+  pop.className = 'area-pop'; pop.id = 'area-pop'; pop.setAttribute('role', 'region');
+  let popBtn = null, popScroll = 0;
+  function closePop(){
+    if (!popBtn) return;
+    popBtn.setAttribute('aria-expanded', 'false'); pop.remove(); popBtn = null;
   }
-  document.querySelectorAll('.area').forEach(b => b.addEventListener('click', () => {
-    fichaFrom = b; fillFicha(+b.dataset.area);
-    root.classList.add('ficha-open');
-    if (ficha.showModal) ficha.showModal(); else ficha.setAttribute('open', '');
+  function openPop(b){
+    const [d, tags] = AREAS[+b.dataset.area];
+    pop.innerHTML = '<strong>' + b.textContent + '</strong><p>' + d + '</p><ul>' + tags.map(x => '<li>' + x + '</li>').join('') + '</ul>';
+    const li = b.parentElement;
+    // se abre hacia el lado con más lugar (offset* no se ve afectado por la escala de la estación)
+    pop.classList.toggle('r', li.offsetLeft + li.offsetWidth / 2 > areasList.offsetWidth * .55);
+    pop.classList.toggle('up', li.offsetTop > areasList.offsetHeight * .6);
+    pop.setAttribute('aria-label', b.textContent);
+    li.appendChild(pop);
+    b.setAttribute('aria-expanded', 'true'); b.setAttribute('aria-controls', 'area-pop');
+    popBtn = b; popScroll = scrollY;
+  }
+  document.querySelectorAll('.area').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    const same = popBtn === b; closePop(); if (!same) openPop(b);
   }));
-  ficha.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => fillFicha(fichaI + +b.dataset.step)));
-  ficha.querySelector('[data-close]').addEventListener('click', () => ficha.close ? ficha.close() : ficha.removeAttribute('open'));
-  ficha.addEventListener('click', e => { if (e.target === ficha) ficha.close(); });
-  ficha.addEventListener('close', () => { root.classList.remove('ficha-open'); if (fichaFrom) fichaFrom.focus({preventScroll: true}); });
-  ficha.addEventListener('keydown', e => { if (e.key === 'ArrowRight') fillFicha(fichaI + 1); if (e.key === 'ArrowLeft') fillFicha(fichaI - 1); });
+  document.addEventListener('pointerdown', e => { if (popBtn && !e.target.closest('.areas li')) closePop(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && popBtn) { const b = popBtn; closePop(); b.focus(); } });
+  addEventListener('scroll', () => { if (popBtn && Math.abs(scrollY - popScroll) > 40) closePop(); }, {passive: true});
 
   /* ---------- formulario (prototipo: no envía) ---------- */
   const form = document.getElementById('contacto');
