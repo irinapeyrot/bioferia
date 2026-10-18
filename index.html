@@ -124,20 +124,85 @@ p{margin:0;max-width:58ch}
 .area:hover{border-bottom-color:var(--st-line)}
 .area:hover::before{transform:scale(1.6)}
 
-/* ---------- mini expansión de área ---------- */
-.areas{position:relative}.areas li{position:relative}
-.area[aria-expanded="true"]::before{transform:scale(1.6)}
-.area::after{transition:transform .25s ease}
-.area[aria-expanded="true"]::after{transform:rotate(45deg);opacity:1}
-.area-pop{position:absolute;left:0;top:calc(100% + 4px);z-index:6;width:min(290px,78vw);padding:14px 16px 16px;border-radius:22px;
+
+/* ---------- quiénes somos: logos y galería en movimiento ---------- */
+.team{display:flex;flex-wrap:wrap;gap:14px 40px;align-items:flex-end}
+.team-h{margin:0 0 8px;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--st-mute)}
+.logos{display:flex;flex-wrap:wrap;align-items:center;gap:12px 26px;list-style:none;margin:0;padding:0}
+.logos img{display:block;height:var(--h,28px);width:auto;filter:brightness(0);opacity:.88}
+.w-negro .logos img,.w-indigo .logos img,.w-magenta .logos img{filter:brightness(0) invert(.93)}
+h3.sub{margin:8px 0 0;font-size:clamp(1.25rem,2vw,1.6rem);font-weight:800;letter-spacing:-.02em;line-height:1.08;max-width:24ch}
+h3.sub em{font-style:normal;color:var(--st-acc)}
+.w-lima h3.sub em{color:var(--indigo)}
+.gal{display:flex;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+.gal-track{display:flex;align-items:center;gap:12px;padding:4px 12px 4px 0;margin:0;list-style:none;flex:none;animation:mq 55s linear infinite}
+.gal:hover .gal-track{animation-play-state:paused}
+.gal li{flex:none;height:118px;overflow:hidden;background:var(--indigo)}
+.gal li.g-pill{width:190px;border-radius:999px}
+.gal li.g-disc{width:118px;border-radius:50%}
+.gal li.g-soft{width:160px;border-radius:26px}
+.gal li.g-tall{width:84px;border-radius:999px}
+.gal img{display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.12);transition:filter .4s ease}
+.gal li:hover img{filter:none}
+@media (min-width:761px){
+  html.depth #descubrinos .gal{width:100vw;margin-left:calc(50% - 50vw - min(20vw,300px));margin-top:6px}
+}
+@media (max-width:760px){.gal li{height:84px}.gal li.g-pill{width:140px}.gal li.g-disc{width:84px}.gal li.g-soft{width:116px}.gal li.g-tall{width:60px}.logos img{height:calc(var(--h,28px) * .8)}}
+
+/* ---------- compromiso ---------- */
+.pledge{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px;list-style:none;margin:0;padding:0}
+.pledge li{display:flex;align-items:center;gap:12px;font-weight:700;font-size:.98rem;line-height:1.25}
+.pl{flex:none;background:var(--st-acc)}
+.pl.s-disc{width:22px;height:22px;border-radius:50%}
+.pl.s-pill{width:30px;height:14px;border-radius:999px}
+.pl.s-soft{width:20px;height:20px;border-radius:6px}
+.pl.s-dots{width:24px;height:10px;background:radial-gradient(circle,var(--st-acc) 3.5px,transparent 4px) 0 50%/8px 10px repeat-x}
+@media (max-width:720px){.pledge{grid-template-columns:1fr;gap:8px}.pledge li{font-size:.9rem}}
+
+/* ---------- áreas: cada una con su forma ---------- */
+.on-tap{display:none}
+@media (hover:none),(pointer:coarse){.on-hover{display:none}.on-tap{display:inline}}
+.chips{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px 10px;list-style:none;margin:4px 0 0;padding:0}
+.chips li{position:relative;transform:translateY(var(--y,0))}
+.chips li.open{z-index:10}
+.chips li:nth-child(3n+2){--y:6px}.chips li:nth-child(4n+3){--y:-5px}
+.chip{display:flex;align-items:center;justify-content:center;gap:8px;border:0;font-weight:800;font-size:1rem;letter-spacing:-.01em;line-height:1.1;
+  padding:12px 18px;transition:transform .25s ease,box-shadow .25s ease}
+.chips li.pill .chip{border-radius:999px}
+.chips li.soft .chip{border-radius:18px;padding:14px 18px}
+.chips li.disc .chip{width:104px;height:104px;border-radius:50%;padding:10px;flex-direction:column;text-align:center;font-size:.92rem}
+.f-lima .chip{background:var(--lima);color:var(--negro)}
+.f-crema .chip{background:var(--crema);color:var(--negro)}
+.f-magenta .chip{background:var(--magenta);color:var(--crema)}
+.f-negro .chip{background:var(--negro);color:var(--crema)}
+.f-line .chip{background:transparent;color:var(--crema);box-shadow:inset 0 0 0 1.5px rgba(240,235,227,.7)}
+.picto{width:14px;height:14px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 2px currentColor;opacity:.75}
+.chip:hover,.chip[aria-expanded="true"]{transform:translateY(-3px) scale(1.04)}
+.chip[aria-expanded="true"] .picto{background:currentColor;opacity:1}
+@media (max-width:720px){.chip{font-size:.86rem;padding:9px 13px}.chips li.disc .chip{width:80px;height:80px;font-size:.78rem}.chips{gap:8px}.picto{width:11px;height:11px}}
+
+/* ---------- sedes con foto ---------- */
+.sedes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 16px;list-style:none;margin:0;padding:0}
+.sedes li{display:flex;flex-direction:column;gap:6px;min-width:0}
+.sede-ph{display:block;height:92px;overflow:hidden;background:var(--indigo)}
+.sedes li.disc .sede-ph{width:92px;border-radius:50%}
+.sedes li.soft .sede-ph{border-radius:22px}
+.sedes li.pill .sede-ph{border-radius:999px}
+.sede-ph img{display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.12);transition:filter .4s ease}
+.sedes li:hover img{filter:none}
+.sedes strong{font-size:1rem;font-weight:800;display:flex;align-items:center;gap:8px}
+.sedes strong::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--st-acc);flex:none}
+.sedes small{font-size:.68rem;letter-spacing:.14em;font-weight:700;color:var(--st-mute);margin-top:-4px;padding-left:18px}
+@media (max-width:720px){.sedes{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px}.sede-ph{height:66px}.sedes li.disc .sede-ph{width:66px}.sedes strong{font-size:.84rem}}
+
+/* ---------- tarjetita de área ---------- */
+.area-pop{position:absolute;left:0;top:calc(100% + 8px);z-index:6;width:min(260px,72vw);pointer-events:none;padding:14px 16px 16px;border-radius:22px;
   background:var(--st-ink);color:var(--st-bg);display:flex;flex-direction:column;gap:8px;text-align:left;
   box-shadow:0 14px 40px rgba(7,8,9,.28);animation:popIn .28s cubic-bezier(.2,.7,.2,1)}
 .area-pop.r{left:auto;right:0}
-.area-pop.up{top:auto;bottom:calc(100% + 4px)}
+.area-pop.up{top:auto;bottom:calc(100% + 8px)}
 .area-pop strong{font-size:1.02rem;font-weight:800;letter-spacing:-.01em}
 .area-pop p{margin:0;font-size:.9rem;line-height:1.4}
-.area-pop ul{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:2px 0 0;padding:0}
-.area-pop li{border-radius:999px;padding:4px 10px;box-shadow:inset 0 0 0 1.5px currentColor;font-size:.74rem;font-weight:700;opacity:.9}
 @keyframes popIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
 .area-pop.up{animation-name:popUp}
 @keyframes popUp{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
@@ -343,19 +408,24 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
 
   <section class="station w-lima" id="descubrinos" data-label="Quiénes somos" data-side="-1">
     <div class="panel">
-            <div class="floaters" aria-label="Fotos del festival">
-          <figure class="floater softw" style="--c:var(--indigo);--d:8s;--dl:-1.5s;--op:50% 55%;--l:3%;--t:11%;--w:25%" data-foto="https://framerusercontent.com/images/oej9r0ePRIZQX8Cgs0BPRumDsw.jpg?scale-down-to=1024"><div class="ph"></div><figcaption>Hipódromo de Palermo</figcaption></figure>
-          <figure class="floater circle lr" style="--c:var(--magenta);--d:9.4s;--dl:-3.2s;--op:50% 50%;--l:24%;--t:42%;--w:13%" data-foto="https://framerusercontent.com/images/yvvF45mHsKkbYez5HqwcuZfTDZg.jpg?scale-down-to=1024"><div class="ph"></div><figcaption>Bioferia 2026</figcaption></figure>
-      </div>
-      <h2>Quiénes somos</h2>
+            <h2>Quiénes somos</h2>
       <p class="lead">Bioferia es el festival de sustentabilidad y consumo responsable más grande de América Latina. Lo produce GrupoBio, con más de 15 años de trayectoria en sustentabilidad en la región.</p>
       <p class="body">Durante tres días reúne a emprendedores de triple impacto, empresas con iniciativas ambientales, ONG y público general en charlas, talleres, experiencias inmersivas y música en vivo.</p>
-      <ul class="orgs" aria-label="Organizan">
-        <li>Bioferia</li>
-        <li>Greenbondi <small>agencia de sustentabilidad</small></li>
-        <li>Bioguía</li>
-        <li>Hipódromo de Palermo <small>host</small></li>
-      </ul>
+      <div class="team">
+        <div><p class="team-h">Organizan</p>
+          <ul class="logos">
+            <li><img src="https://framerusercontent.com/images/bZy3dCmGdaK1jDcULR9xAYCc8.png?scale-down-to=512" alt="Bioferia" style="--h:30px"></li>
+            <li><img src="https://framerusercontent.com/images/QpxRw5r1LOhL2aRIN8X0CpS1GI.png?scale-down-to=512" alt="Greenbondi, agencia de sustentabilidad" style="--h:20px"></li>
+            <li><img src="https://framerusercontent.com/images/ahEqcTptmR7um6ZJobgXovobzm0.png?scale-down-to=512" alt="Bioguía" style="--h:24px"></li>
+          </ul></div>
+        <div><p class="team-h">Host</p>
+          <ul class="logos"><li><img src="https://framerusercontent.com/images/0JKARBoEfoouyDpTQE7tYTmZeBk.png?scale-down-to=512" alt="Hipódromo de Palermo" style="--h:40px"></li></ul></div>
+      </div>
+      <h3 class="sub">Que no te lo cuenten. <em>Vení a vivirlo.</em></h3>
+      <div class="gal" aria-label="Fotos de ediciones anteriores">
+        <ul class="gal-track"><li class="g-pill"><img src="https://framerusercontent.com/images/Jxey3BPYuPk6h6FJ8Jw3zAtvsus.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-disc"><img src="https://framerusercontent.com/images/VRoDApECGASUtV4UX4UmVJCT4.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-soft"><img src="https://framerusercontent.com/images/IHarzSDyI4TUC4HoR2Wu09c464.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-tall"><img src="https://framerusercontent.com/images/tOi6FRDC4WDBM5gRBWL4aPqpA.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-pill"><img src="https://framerusercontent.com/images/m5yDTIB50CgUUtSVh60PqkELBk0.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-disc"><img src="https://framerusercontent.com/images/TxMd5u1Dwd5CcC4uWPSuNsoGg.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-soft"><img src="https://framerusercontent.com/images/sxOUyG4NYf1b93geHjZFtJF9mwo.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-tall"><img src="https://framerusercontent.com/images/5DH9GwoIAbqcOotf94GomeRZX8.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-pill"><img src="https://framerusercontent.com/images/WRdPhYALXiDkIvPCh2uFw44z7o.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-disc"><img src="https://framerusercontent.com/images/UlH68AYowMzwDgs61Kmt08bOIyg.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li></ul>
+        <ul class="gal-track" aria-hidden="true"><li class="g-pill"><img src="https://framerusercontent.com/images/Jxey3BPYuPk6h6FJ8Jw3zAtvsus.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-disc"><img src="https://framerusercontent.com/images/VRoDApECGASUtV4UX4UmVJCT4.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-soft"><img src="https://framerusercontent.com/images/IHarzSDyI4TUC4HoR2Wu09c464.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-tall"><img src="https://framerusercontent.com/images/tOi6FRDC4WDBM5gRBWL4aPqpA.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-pill"><img src="https://framerusercontent.com/images/m5yDTIB50CgUUtSVh60PqkELBk0.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-disc"><img src="https://framerusercontent.com/images/TxMd5u1Dwd5CcC4uWPSuNsoGg.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-soft"><img src="https://framerusercontent.com/images/sxOUyG4NYf1b93geHjZFtJF9mwo.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-tall"><img src="https://framerusercontent.com/images/5DH9GwoIAbqcOotf94GomeRZX8.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-pill"><img src="https://framerusercontent.com/images/WRdPhYALXiDkIvPCh2uFw44z7o.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li><li class="g-disc"><img src="https://framerusercontent.com/images/UlH68AYowMzwDgs61Kmt08bOIyg.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></li></ul>
+      </div>
     </div>
   </section>
 
@@ -363,19 +433,21 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
     <div class="panel">
       <p class="eyebrow">Más de 200 marcas con impacto positivo</p>
       <h2>Descubrí las <em>11 áreas</em> temáticas.</h2>
-      <p class="lead">Cada área reúne marcas, talleres y charlas alrededor de un mismo tema. Tocá una para ver qué vas a encontrar.</p>
-      <ul class="areas">
-        <li><button type="button" class="area" data-area="0" aria-expanded="false">Mercado</button></li>
-        <li><button type="button" class="area" data-area="1" aria-expanded="false">Gastronomía</button></li>
-        <li><button type="button" class="area" data-area="2" aria-expanded="false">Bienestar</button></li>
-        <li><button type="button" class="area" data-area="3" aria-expanded="false">Moda</button></li>
-        <li><button type="button" class="area" data-area="4" aria-expanded="false">Diseño y deco</button></li>
-        <li><button type="button" class="area" data-area="5" aria-expanded="false">Infancia</button></li>
-        <li><button type="button" class="area" data-area="6" aria-expanded="false">Turismo</button></li>
-        <li><button type="button" class="area" data-area="7" aria-expanded="false">Arquitectura y jardinería</button></li>
-        <li><button type="button" class="area" data-area="8" aria-expanded="false">Energías renovables</button></li>
-        <li><button type="button" class="area" data-area="9" aria-expanded="false">Movilidad</button></li>
-        <li><button type="button" class="area" data-area="10" aria-expanded="false">ONG</button></li>
+      <p class="lead">Cada área reúne marcas, talleres y charlas alrededor de un mismo tema. <span class="on-hover">Pasá el cursor por cada una para ver qué vas a encontrar.</span><span class="on-tap">Tocá cada una para ver qué vas a encontrar.</span></p>
+      <!-- Áreas: cada una con su forma. Cuando estén los pictogramas y colores por área,
+           el SVG va dentro de .picto y el color en --area (style del li). -->
+      <ul class="chips">
+        <li class="pill f-lima" style="--area:var(--lima)"><button type="button" class="chip" data-area="0" data-d="Alimentos y bebidas." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Mercado</button></li>
+        <li class="soft f-crema" style="--area:var(--lima)"><button type="button" class="chip" data-area="1" data-d="Chefs, food trucks y cocina de autor." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Gastronomía</button></li>
+        <li class="disc f-magenta" style="--area:var(--lima)"><button type="button" class="chip" data-area="2" data-d="Cosmética, higiene, yoga, meditación." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Bienestar</button></li>
+        <li class="pill f-line" style="--area:var(--lima)"><button type="button" class="chip" data-area="3" data-d="Indumentaria, calzado, accesorios." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Moda</button></li>
+        <li class="soft f-negro" style="--area:var(--lima)"><button type="button" class="chip" data-area="4" data-d="Objetos, mobiliario y decoración." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Diseño y deco</button></li>
+        <li class="disc f-lima" style="--area:var(--lima)"><button type="button" class="chip" data-area="5" data-d="Juguetes, educación, alimentación." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Infancia</button></li>
+        <li class="pill f-magenta" style="--area:var(--lima)"><button type="button" class="chip" data-area="6" data-d="Destinos, agencias, hoteles." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Turismo</button></li>
+        <li class="soft f-crema" style="--area:var(--lima)"><button type="button" class="chip" data-area="7" data-d="Construcción, paisajismo, jardinería." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Arquitectura y jardinería</button></li>
+        <li class="pill f-negro" style="--area:var(--lima)"><button type="button" class="chip" data-area="8" data-d="Energía solar, eficiencia energética, tecnologías limpias." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Energías renovables</button></li>
+        <li class="disc f-line" style="--area:var(--lima)"><button type="button" class="chip" data-area="9" data-d="Bicis, monopatines." aria-expanded="false"><span class="picto" aria-hidden="true"></span>Movilidad</button></li>
+        <li class="soft f-magenta" style="--area:var(--lima)"><button type="button" class="chip" data-area="10" data-d="Organizaciones que impulsan el cambio." aria-expanded="false"><span class="picto" aria-hidden="true"></span>ONG</button></li>
       </ul>
       <p class="zones"><b>El predio se organiza en cuatro zonas:</b> sponsors y pymes, emprendedores y microemprendedores, gastronomía y escenarios.</p>
     </div>
@@ -433,11 +505,12 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
         <div><dt>asistentes en Bioferia BA 2026</dt><dd>45.000</dd></div>
         <div><dt>expositores</dt><dd>+2.000</dd></div>
       </dl>
-      <ul class="commit" aria-label="Compromisos">
-        <li>Evento carbono neutral</li>
-        <li>Gestión responsable de residuos</li>
-        <li>Materiales biodegradables y compostables</li>
-        <li>Becas para ONG</li>
+      <h3 class="sub">Porque nuestro compromiso es real, <em>así hacemos Bioferia.</em></h3>
+      <ul class="pledge">
+        <li><span class="pl s-disc" aria-hidden="true"></span>Evento carbono neutral</li>
+        <li><span class="pl s-pill" aria-hidden="true"></span>Separación y gestión responsable de residuos</li>
+        <li><span class="pl s-soft" aria-hidden="true"></span>Materiales biodegradables y compostables</li>
+        <li><span class="pl s-dots" aria-hidden="true"></span>Becas para ONGs</li>
       </ul>
     </div>
   </section>
@@ -447,14 +520,15 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
       <p class="eyebrow">Bioferia por el mundo</p>
       <h2>Sedes en <em>Latinoamérica.</em></h2>
       <p class="lead">Lo que empezó en Buenos Aires hoy viaja por la región: cada sede suma su comunidad de emprendedores y organizaciones locales.</p>
-      <ul class="cities">
-        <li>Buenos Aires<small>AR</small></li>
-        <li>La Plata<small>AR</small></li>
-        <li>Córdoba<small>AR</small></li>
-        <li>Rosario<small>AR</small></li>
-        <li>Montevideo<small>UY</small></li>
-        <li>Tulum<small>MX</small></li>
-        <li>CDMX<small>MX</small></li>
+      <!-- Fotos provisorias: la web oficial no tiene fotos por sede. Reemplazar cada src por una foto de esa sede. -->
+      <ul class="sedes">
+        <li class="disc"><span class="sede-ph"><img src="https://framerusercontent.com/images/oej9r0ePRIZQX8Cgs0BPRumDsw.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></span><strong>Buenos Aires</strong><small>AR</small></li>
+        <li class="soft"><span class="sede-ph"><img src="https://framerusercontent.com/images/pHg6dqedUh2P6egfoERJI4b4XJ0.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></span><strong>La Plata</strong><small>AR</small></li>
+        <li class="pill"><span class="sede-ph"><img src="https://framerusercontent.com/images/8NrmoE7hWTCkp2NGEPvU99UKc.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></span><strong>Córdoba</strong><small>AR</small></li>
+        <li class="disc"><span class="sede-ph"><img src="https://framerusercontent.com/images/yrjFqX9lXTpQDDXJphD4zvjiyIE.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></span><strong>Rosario</strong><small>AR</small></li>
+        <li class="soft"><span class="sede-ph"><img src="https://framerusercontent.com/images/GkMMZmeKxI521vR8RMGxgY9BdL0.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></span><strong>Montevideo</strong><small>UY</small></li>
+        <li class="pill"><span class="sede-ph"><img src="https://framerusercontent.com/images/BYNyusZevAGnjYQu81UhnG9RXE.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></span><strong>Tulum</strong><small>MX</small></li>
+        <li class="disc"><span class="sede-ph"><img src="https://framerusercontent.com/images/O2veK4MraIjijl0t4JkfEJ2FFvc.jpg?scale-down-to=512" alt="" loading="lazy" decoding="async"></span><strong>CDMX</strong><small>MX</small></li>
       </ul>
     </div>
   </section>
@@ -552,6 +626,13 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
   ];
   SHAPES.forEach((S, j) => { if (!S) return; let q = 97 + j * 131; S.r = Array.from({length: 240}, () => (q = (q * 16807) % 2147483647) / 2147483647); });
   const TAU = Math.PI * 2;
+  // video del festival (el mismo de bioferia.info) como fondo del inicio, en blanco y negro bajo un velo negro
+  const heroVid = document.createElement('video');
+  Object.assign(heroVid, {muted: true, loop: true, playsInline: true, autoplay: true, preload: 'auto'});
+  heroVid.setAttribute('muted', ''); heroVid.setAttribute('playsinline', '');
+  heroVid.src = 'https://framerusercontent.com/assets/hR4Ci2DX41sKxmaVqeJ7wnOKKFY.mp4';
+  let vidOn = false;
+  const vidPlay = on => { if (on === vidOn) return; vidOn = on; if (on) heroVid.play().catch(() => {}); else heroVid.pause(); };
 
   const P = 900, GAP = 1500, LEAD = 520;
   const sL = P / (P + LEAD);
@@ -935,8 +1016,14 @@ void main(){
     const light = (w === 'crema' || w === 'lima');
     const sec = now / 1000;
     // trama de Trazo Lab de fondo: el color del mundo queda encima como un velo
+    if (j === 0 && heroVid.readyState >= 2) {
+      const vw = heroVid.videoWidth, vh = heroVid.videoHeight, sc = Math.max(W / vw, H / vh);
+      ctx.save(); ctx.globalAlpha = .42; ctx.filter = 'grayscale(1) contrast(1.15)';
+      ctx.drawImage(heroVid, (W - vw * sc) / 2, (H - vh * sc) / 2, vw * sc, vh * sc);
+      ctx.restore();
+    }
     const tid = WORLD_TRAMA[j];
-    if (tid) {
+    if (tid && j !== 0) {
       const q = coarse ? 3.2 : 2.6;
       const r = Trama.render(tid, W / q, H / q, now, [.5 + mxs * .08, .5 - mys * .08]);
       const src = r && (r.canvas || r.fallback);
@@ -1082,6 +1169,7 @@ void main(){
       count.textContent = String(w + 1).padStart(2, '0') + ' / ' + String(N).padStart(2, '0');
       navLinks.forEach(a => a.setAttribute('aria-current', +a.dataset.go === w ? 'true' : 'false'));
       pie.classList.toggle('on', w === N - 1);
+      vidPlay(w <= 1);
     }
     requestAnimationFrame(frame);
   }
@@ -1093,7 +1181,7 @@ void main(){
     root.classList.add('cursor-on');
     addEventListener('pointermove', ev => {
       cx0 = ev.clientX; cy0 = ev.clientY;
-      mx = (ev.clientX / W) * 2 - 1; my = (ev.clientY / H) * 2 - 1;
+      // la escena ya no sigue al cursor (mareaba): solo se mueve con el scroll
       const t = ev.target;
       cursor.classList.toggle('hover', !!t.closest('a,button:not([disabled]),select,label'));
       cursor.classList.toggle('text', !!t.closest('input,textarea'));
@@ -1128,45 +1216,41 @@ void main(){
     pie.classList.toggle('paused', on);
   });
 
-  /* ---------- áreas: mini expansión dentro de la lista ---------- */
-  const AREAS = [
-    ['Emprendedores que producen con criterio sustentable y venden directo, sin intermediarios.', ['Alimentos orgánicos', 'Cosmética natural', 'A granel']],
-    ['Chefs, productores, food trucks y propuestas de autor: cocina consciente y sin descartables.', ['Vegetariano', 'Vegano', 'Sin TACC']],
-    ['Prácticas para bajar un cambio y cuidar el cuerpo y la cabeza, al aire libre.', ['Yoga', 'Meditación', 'Terapias naturales']],
-    ['Marcas que repiensan cómo se hace la ropa y cuánto dura.', ['Moda circular', 'Segunda mano', 'Diseño de autor']],
-    ['Objetos, mobiliario y deco hechos con materiales recuperados y procesos de bajo impacto.', ['Objetos', 'Mobiliario', 'Materiales recuperados']],
-    ['Juegos y talleres para que chicas y chicos descubran la naturaleza jugando.', ['Talleres', 'Juegos', 'Huerta para chicos']],
-    ['Destinos y experiencias para viajar distinto, cuidando los paisajes y las comunidades.', ['Viajes responsables', 'Naturaleza', 'Turismo rural']],
-    ['Construcción natural, huerta y jardín para habitar de otra manera.', ['Bioconstrucción', 'Huerta', 'Plantas nativas']],
-    ['Soluciones para generar y usar energía limpia en casa, en la empresa y en el barrio.', ['Paneles solares', 'Eficiencia', 'Energía comunitaria']],
-    ['Formas de moverse por la ciudad con menos emisiones.', ['Bicis', 'Eléctricos', 'Transporte compartido']],
-    ['Organizaciones del tercer sector que trabajan por el ambiente y la comunidad. Bioferia les da becas para participar.', ['Tercer sector', 'Voluntariado', 'Becas para ONG']]
-  ];
-  const areasList = document.querySelector('.areas');
+  /* ---------- áreas: se leen con hover (o tap en pantallas táctiles) ---------- */
+  const areasList = document.querySelector('.chips');
   const pop = document.createElement('div');
-  pop.className = 'area-pop'; pop.id = 'area-pop'; pop.setAttribute('role', 'region');
-  let popBtn = null, popScroll = 0;
+  pop.className = 'area-pop'; pop.id = 'area-pop'; pop.setAttribute('role', 'tooltip');
+  let popBtn = null, popScroll = 0, popPinned = false;
+  const canHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
   function closePop(){
     if (!popBtn) return;
-    popBtn.setAttribute('aria-expanded', 'false'); pop.remove(); popBtn = null;
+    popBtn.setAttribute('aria-expanded', 'false'); popBtn.removeAttribute('aria-describedby'); popBtn.parentElement.classList.remove('open'); pop.remove(); popBtn = null; popPinned = false;
   }
   function openPop(b){
-    const [d, tags] = AREAS[+b.dataset.area];
-    pop.innerHTML = '<strong>' + b.textContent + '</strong><p>' + d + '</p><ul>' + tags.map(x => '<li>' + x + '</li>').join('') + '</ul>';
+    if (popBtn === b) return;
+    closePop();
+    pop.innerHTML = '<strong>' + b.textContent + '</strong><p>' + b.dataset.d + '</p>';
     const li = b.parentElement;
-    // se abre hacia el lado con más lugar (offset* no se ve afectado por la escala de la estación)
     pop.classList.toggle('r', li.offsetLeft + li.offsetWidth / 2 > areasList.offsetWidth * .55);
-    pop.classList.toggle('up', li.offsetTop > areasList.offsetHeight * .6);
-    pop.setAttribute('aria-label', b.textContent);
-    li.appendChild(pop);
-    b.setAttribute('aria-expanded', 'true'); b.setAttribute('aria-controls', 'area-pop');
+    pop.classList.toggle('up', li.offsetTop + li.offsetHeight / 2 > areasList.offsetHeight * .62);
+    li.appendChild(pop); li.classList.add('open');
+    b.setAttribute('aria-expanded', 'true'); b.setAttribute('aria-describedby', 'area-pop');
     popBtn = b; popScroll = scrollY;
   }
-  document.querySelectorAll('.area').forEach(b => b.addEventListener('click', e => {
-    e.stopPropagation();
-    const same = popBtn === b; closePop(); if (!same) openPop(b);
-  }));
-  document.addEventListener('pointerdown', e => { if (popBtn && !e.target.closest('.areas li')) closePop(); });
+  document.querySelectorAll('.chip').forEach(b => {
+    if (canHover) {
+      b.parentElement.addEventListener('mouseenter', () => openPop(b));
+      b.parentElement.addEventListener('mouseleave', () => { if (!popPinned) closePop(); });
+    }
+    b.addEventListener('focus', () => { if (canHover) openPop(b); });
+    b.addEventListener('blur', () => { if (canHover && !popPinned) closePop(); });
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      if (popBtn === b && (popPinned || !canHover)) { closePop(); return; }
+      openPop(b); popPinned = true;
+    });
+  });
+  document.addEventListener('pointerdown', e => { if (popBtn && !e.target.closest('.chips li')) closePop(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && popBtn) { const b = popBtn; closePop(); b.focus(); } });
   addEventListener('scroll', () => { if (popBtn && Math.abs(scrollY - popScroll) > 40) closePop(); }, {passive: true});
 
@@ -1208,6 +1292,7 @@ void main(){
   const h = location.hash.slice(1);
   const hj = stations.findIndex(s => s.id === h);
   if (hj > 0) { go(hj, true); sSm = hj; }
+  if (depth) vidPlay(true);
   requestAnimationFrame(frame);
 })();
 </script>
