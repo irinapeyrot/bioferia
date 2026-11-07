@@ -483,6 +483,8 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
   html.depth #gastronomia.duo .floater:nth-child(1){grid-column:auto!important}
 }
 </style>
+<link rel="stylesheet" href="assets/entradas.css">
+<style>html.tk-open{overflow:hidden}html.tk-open #cursor{z-index:50;background:var(--negro)}html.tk-open #cursor.hover{background:transparent;box-shadow:inset 0 0 0 1.5px var(--negro)}</style>
 </head>
 <body>
 <canvas id="scene" aria-hidden="true"></canvas>
@@ -506,7 +508,7 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
   <div class="top-cta">
     <button class="btn ghost menu-btn" type="button" aria-expanded="false" aria-controls="nav">Menú</button>
     <a class="btn ghost" href="#hablemos" data-go="7">Ser expositor</a>
-    <button class="btn" type="button" disabled>Entradas <small>Próximamente</small></button>
+    <button class="btn" type="button" data-tickets aria-haspopup="dialog" aria-controls="entradas">Entradas</button>
   </div>
 </header>
 
@@ -521,7 +523,7 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
       <p class="lead">La 8ª edición reúne música en vivo, emprendedores, charlas, gastronomía&nbsp;consciente, empresas de triple impacto, ONG y referentes.</p>
       <div class="actions">
         <a class="btn" href="#hablemos" data-go="7">Ser expositor</a>
-        <button class="btn ghost" type="button" disabled>Entradas <small>Próximamente</small></button>
+        <button class="btn ghost" type="button" data-tickets aria-haspopup="dialog" aria-controls="entradas">Comprar entradas</button>
       </div>
     </div>
   </section>
@@ -1446,5 +1448,6 @@ void main(){
   requestAnimationFrame(frame);
 })();
 </script>
+<script src="assets/entradas.js" defer></script>
 </body>
 </html>
