@@ -40,7 +40,7 @@
 
   /* ---------- estado ---------- */
   let st;
-  const reset = () => { st = { step: 1, day: null, qty: { general: 0, tribu: 0, manija: 0 }, name: '', email: '', method: 'mp', order: null }; };
+  const reset = () => { st = { step: 1, day: 'vie', qty: { general: 0, tribu: 0, manija: 0 }, name: '', email: '', method: 'mp', order: null }; };
   reset();
   let lastFocus = null;
 
