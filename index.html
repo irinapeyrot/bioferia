@@ -482,6 +482,56 @@ html.motion-on .motion-toggle{background:transparent;color:var(--ink);box-shadow
   html.depth #mundo.duo .floater:nth-child(7){position:absolute;left:8.0%;top:75.93%;width:22.0%}
   html.depth #gastronomia.duo .floater:nth-child(1){grid-column:auto!important}
 }
+
+/* ---------- fotos con más protagonismo (corrección): columna de fotos más ancha y collage al alto de pantalla ---------- */
+@media (min-width:761px){
+  html.depth .station.duo{width:min(1400px, calc(100vw - 2 * var(--gutter) - 110px))}
+  html.depth .station.duo .panel{grid-template-columns:minmax(0,.86fr) minmax(0,1.3fr);column-gap:clamp(28px,3.6vw,56px)}
+  html.depth .station.duo .panel > .floaters{justify-self:center}
+  html.depth .station.duo .floaters{margin:0 auto!important}
+  html.depth .station.duo .floaters .floater:nth-child(n){position:absolute!important;margin:0!important}
+  html.depth #escenarios.duo .floaters{width:min(100%, calc((100vh - 210px) * 100 / 117.12))}
+  html.depth #gastronomia.duo .floaters{width:min(100%, calc((100vh - 210px) * 100 / 79.90))}
+  html.depth #mundo.duo .floaters{width:min(100%, calc((100vh - 210px) * 100 / 114.72))}
+  html.depth #escenarios.duo .floaters{aspect-ratio:100/117.12}
+  html.depth #escenarios.duo .floater:nth-child(1){left:0.00%;top:0.00%;width:29.00%}
+  html.depth #escenarios.duo .floater:nth-child(2){left:33.00%;top:2.56%;width:36.00%}
+  html.depth #escenarios.duo .floater:nth-child(3){left:73.00%;top:0.00%;width:27.00%}
+  html.depth #escenarios.duo .floater:nth-child(4){left:0.00%;top:35.69%;width:25.00%}
+  html.depth #escenarios.duo .floater:nth-child(5){left:29.00%;top:33.13%;width:29.00%}
+  html.depth #escenarios.duo .floater:nth-child(6){left:62.00%;top:35.69%;width:38.00%}
+  html.depth #escenarios.duo .floater:nth-child(7){left:4.00%;top:69.03%;width:29.00%}
+  html.depth #escenarios.duo .floater:nth-child(8){left:37.00%;top:71.59%;width:24.00%}
+  html.depth #escenarios.duo .floater:nth-child(9){left:65.00%;top:69.03%;width:31.00%}
+  html.depth #gastronomia.duo .floaters{aspect-ratio:100/79.90}
+  html.depth #gastronomia.duo .floater:nth-child(1){left:0.00%;top:0.00%;width:42.00%}
+  html.depth #gastronomia.duo .floater:nth-child(2){left:46.00%;top:3.75%;width:28.00%}
+  html.depth #gastronomia.duo .floater:nth-child(3){left:78.00%;top:0.00%;width:22.00%}
+  html.depth #gastronomia.duo .floater:nth-child(4){left:2.00%;top:54.57%;width:46.00%}
+  html.depth #gastronomia.duo .floater:nth-child(5){left:52.00%;top:50.81%;width:46.00%}
+  html.depth #mundo.duo .floaters{aspect-ratio:100/114.72}
+  html.depth #mundo.duo .floater:nth-child(1){left:0.00%;top:0.00%;width:29.00%}
+  html.depth #mundo.duo .floater:nth-child(2){left:33.00%;top:2.62%;width:34.00%}
+  html.depth #mundo.duo .floater:nth-child(3){left:71.00%;top:0.00%;width:29.00%}
+  html.depth #mundo.duo .floater:nth-child(4){left:11.00%;top:36.80%;width:30.00%}
+  html.depth #mundo.duo .floater:nth-child(5){left:45.00%;top:34.19%;width:44.00%}
+  html.depth #mundo.duo .floater:nth-child(6){left:19.50%;top:69.06%;width:27.00%}
+  html.depth #mundo.duo .floater:nth-child(7){left:50.50%;top:71.67%;width:30.00%}
+  html.depth .station.duo .floater figcaption{font-size:.78rem;bottom:-11px;max-width:calc(100% + 28px)}
+}
+@media (min-width:761px) and (max-width:1000px){html.depth .station.duo .floater figcaption{font-size:.62rem;padding:3px 7px;bottom:-9px}}
+@keyframes flo2{0%,100%{transform:translate(0,0) rotate(-1deg)}50%{transform:translate(0,-6px) rotate(1deg)}}
+@media (min-width:761px){html.depth .station.duo .floater{animation-name:flo2}}
+/* móvil: las fotos pasan a una tira deslizable, más grandes y todas visibles */
+@media (max-width:760px){
+  .station .floaters{display:flex;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none;
+    margin:0 calc(-1 * var(--gutter)) 4px;padding:6px var(--gutter) 16px;align-items:flex-end;pointer-events:auto;touch-action:pan-x pan-y;
+    -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 44px),transparent)}
+  .station .floaters::-webkit-scrollbar{display:none}
+  .station .floaters .floater,.station .floaters .floater:nth-child(n+5){display:block;flex:0 0 auto;width:auto;height:clamp(140px,22vh,196px);scroll-snap-align:start;animation:none}
+  .station .floaters .floater .ph,.station .floaters .floater img{height:100%;width:auto}
+  .station .floaters .floater figcaption{font-size:.66rem;padding:4px 9px;bottom:-9px;white-space:nowrap;max-width:none}
+}
 </style>
 <link rel="stylesheet" href="assets/entradas.css">
 <style>html.tk-open{overflow:hidden}html.tk-open #cursor{z-index:50;background:var(--negro)}html.tk-open #cursor.hover{background:transparent;box-shadow:inset 0 0 0 1.5px var(--negro)}</style>
